@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUK-ConvoSearch - Student Support Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --tuk-blue: #0033A0;
+            --tuk-yellow: #FFD100;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--tuk-blue) 0%, #002080 100%);
+        }
+        
+        .chat-container {
+            height: 70vh;
+            overflow-y: auto;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .message {
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background-color: var(--tuk-blue);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .bot-message {
+            background-color: #e9ecef;
+            color: #212529;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .source-badge {
+            background-color: var(--tuk-yellow);
+            color: #000;
+            font-size: 0.8em;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-right: 5px;
+        }
+        
+        .confidence-meter {
+            height: 4px;
+            background-color: #dee2e6;
+            border-radius: 2px;
+            margin-top: 5px;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background-color: #28a745;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--tuk-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .input-group {
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background-color: var(--tuk-blue);
+            border-color: var(--tuk-blue);
+        }
+        
+        .btn-primary:hover {
+            background-color: #002080;
+            border-color: #002080;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-robot me-2"></i>
+                <strong>TUK-ConvoSearch</strong>
+                <small class="ms-2 opacity-75">Beta v1.0</small>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="systemInfoBtn">
+                            <i class="fas fa-info-circle"></i> System Info
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="uploadDocsBtn">
+                            <i class="fas fa-upload"></i> Upload Docs
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Chat Interface -->
+            <div class="col-lg-8 mx-auto">
+                <!-- Welcome Card -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title text-primary">
+                            <i class="fas fa-graduation-cap me-2"></i>Welcome to TUK-ConvoSearch
+                        </h4>
+                        <p class="card-text">
+                            Ask me anything about TUK! I can help with:
+                        </p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Academic policies</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Admission procedures</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Examination schedules</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Fee structures</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Library services</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Campus facilities</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <small>
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Tip:</strong> Be specific in your questions for better answers!
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Container -->
+                <div class="card border-0 shadow">
+                    <div class="card-body p-0">
+                        <!-- Chat Messages -->
+                        <div class="chat-container p-3" id="chatMessages">
+                            <!-- Messages will appear here -->
+                        </div>
+                        
+                        <!-- Loading Indicator -->
+                        <div class="loading" id="loadingIndicator">
+                            <div class="spinner"></div>
+                            <p class="mt-2 text-muted">Searching TUK documents...</p>
+                        </div>
+                        
+                        <!-- Input Area -->
+                        <div class="p-3">
+                            <div class="input-group">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="userInput" 
+                                       placeholder="Ask about TUK policies, deadlines, procedures..."
+                                       autocomplete="off">
+                                <button class="btn btn-primary" type="button" id="sendButton">
+                                    <i class="fas fa-paper-plane"></i> Send
+                                </button>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Powered by TUK's official documents • Your data is secure
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sources Panel (Collapsible) -->
+                <div class="card mt-4 border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0">
+                            <a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#sourcesPanel">
+                                <i class="fas fa-file-alt me-2"></i>Document Sources
+                                <span class="badge bg-primary rounded-pill ms-2" id="sourceCount">0</span>
+                            </a>
+                        </h6>
+                    </div>
+                    <div class="collapse" id="sourcesPanel">
+                        <div class="card-body">
+                            <div id="sourcesList">
+                                <p class="text-muted mb-0">No sources referenced yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="systemInfoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">System Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="systemInfoContent">
+                    Loading...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // DOM Elements
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const sourcesList = document.getElementById('sourcesList');
+        const sourceCount = document.getElementById('sourceCount');
+        
+        // Add initial bot message
+        addBotMessage("Hello! I'm TUK-ConvoSearch, your AI assistant for the Technical University of Kenya. How can I help you today?");
+        
+        // Event Listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        // System Info Button
+        document.getElementById('systemInfoBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            const response = await fetch('/api/system-info');
+            const data = await response.json();
+            
+            const modalContent = `
+                <h6>System Status</h6>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>System Name:</span>
+                        <span><strong>${data.system_name}</strong></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Version:</span>
+                        <span>${data.version}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Documents Indexed:</span>
+                        <span>${data.vector_store.document_count || 0}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>LLM Model:</span>
+                        <span>${data.llm_model} (${data.llm_provider})</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Embedding Model:</span>
+                        <span>${data.embedding_model}</span>
+                    </li>
+                </ul>
+                <div class="alert alert-info">
+                    <small>
+                        <i class="fas fa-info-circle me-2"></i>
+                        This system uses Retrieval-Augmented Generation (RAG) to provide accurate answers based on TUK's official documents.
+                    </small>
+                </div>
+            `;
+            
+            document.getElementById('systemInfoContent').innerHTML = modalContent;
+            new bootstrap.Modal(document.getElementById('systemInfoModal')).show();
+        });
+        
+        // Upload Documents Button
+        document.getElementById('uploadDocsBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            try {
+                const response = await fetch('/api/upload', { method: 'POST' });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                alert('Error uploading documents: ' + error);
+            }
+        });
+        
+        // Functions
+        async function sendMessage() {
+            const question = userInput.value.trim();
+            if (!question) return;
+            
+            // Add user message
+            addUserMessage(question);
+            userInput.value = '';
+            
+            // Show loading
+            loadingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            try {
+                // Send to API
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading
+                loadingIndicator.style.display = 'none';
+                
+                // Add bot response
+                addBotMessage(data.answer, data.confidence);
+                
+                // Update sources
+                updateSources(data.sources);
+                
+                // Add feedback buttons
+                addFeedbackButtons(question, data.answer);
+                
+            } catch (error) {
+                loadingIndicator.style.display = 'none';
+                addBotMessage("Sorry, I encountered an error. Please try again.", 0);
+                console.error('Error:', error);
+            }
+        }
+        
+        function addUserMessage(text) {
+            const messageDiv = document.createElement('div
