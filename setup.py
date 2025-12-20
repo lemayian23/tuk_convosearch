@@ -143,6 +143,64 @@ Penalty for cheating: Immediate suspension."""
    - Paybill: 123456
    - Account: Student Registration Number
 
+   # Add to setup_project function after creating directories
+def setup_project():
+    """Setup the TUK-ConvoSearch project"""
+    print("🚀 Setting up TUK-ConvoSearch MVP...")
+    
+    # Create necessary directories
+    directories = [
+        "data/raw",
+        "data/processed", 
+        "data/vector_db",
+        "app/web/templates",
+        "tests"
+    ]
+    
+    for directory in directories:
+        os.makedirs(directory, exist_ok=True)
+        print(f"✓ Created directory: {directory}")
+    
+    # Create sample documents
+    create_sample_documents()
+    
+    # Create .env file if it doesn't exist
+    env_file = ".env"
+    if not os.path.exists(env_file):
+        with open(env_file, "w") as f:
+            f.write("# TUK-ConvoSearch Configuration\n")
+            f.write("# Uncomment and set your API keys\n")
+            f.write("# OPENAI_API_KEY=your_key_here\n")
+            f.write("# For local LLM with Ollama:\n")
+            f.write("LLM_PROVIDER=ollama\n")
+            f.write("LLM_MODEL=llama2\n")
+            f.write("OLLAMA_BASE_URL=http://localhost:11434\n")
+            f.write("\n# Conversation History\n")
+            f.write("ENABLE_HISTORY=true\n")
+            f.write("HISTORY_RETENTION_DAYS=30\n")
+        print(f"✓ Created {env_file} file")
+    
+    # Instructions
+    print("\n" + "="*50)
+    print("SETUP COMPLETE! 🎉")
+    print("="*50)
+    print("\n🌟 NEW FEATURE: Conversation History added!")
+    print("   - Chat history is now saved")
+    print("   - View your conversation history")
+    print("   - Start new conversations")
+    print("\nNext steps:")
+    print("1. Add TUK documents (PDF/DOCX/TXT) to data/raw/")
+    print("2. Install Ollama (if using local LLM):")
+    print("   Visit: https://ollama.ai/")
+    print("3. Pull the LLM model:")
+    print("   $ ollama pull llama2")
+    print("4. Run the application:")
+    print("   $ python -m app.web.main")
+    print("5. Open browser: http://localhost:8000")
+    print("6. Click 'Upload Docs' button to index documents")
+    print("\nFor OpenAI GPT, set OPENAI_API_KEY in .env")
+    print("="*50)
+
 Financial Aid Office: Room 201, Administration Block"""
 
     # Write sample files
