@@ -2,6 +2,15 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 import os
 
+# Added Settings class in config.py
+class Settings(BaseSettings):
+    # ... existing config ...
+    
+    # Database for conversation history
+    DATABASE_URL: str = "sqlite:///./data/conversations.db"
+    ENABLE_HISTORY: bool = True
+    HISTORY_RETENTION_DAYS: int = 30
+
 class Settings(BaseSettings):
     # Project
     PROJECT_NAME: str = "TUK-ConvoSearch"
