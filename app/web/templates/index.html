@@ -259,6 +259,259 @@
         const loadingIndicator = document.getElementById('loadingIndicator');
         const sourcesList = document.getElementById('sourcesList');
         const sourceCount = document.getElementById('sourceCount');
+
+        // Add after DOM elements definition
+let currentConversationId = null;
+let conversationHistory = [];
+
+// Update sendMessage function
+async function sendMessage() {
+    const question = userInput.value.trim();
+    if (!question) return;
+    
+    // Add user message
+    addUserMessage(question);
+    userInput.value = '';
+    
+    // Show loading
+    loadingIndicator.style.display = 'block';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    try {
+        // Send to API with conversation ID
+        const response = await fetch('/api/query', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                question: question,
+                conversation_id: currentConversationId,
+                user_id: getUserId()
+            })
+        });
+        
+        const data = await response.json();
+        
+        // Store conversation ID if this is a new conversation
+        if (!currentConversationId && data.conversation_id) {
+            currentConversationId = data.conversation_id;
+            updateHistoryButton();
+        }
+        
+        // Hide loading
+        loadingIndicator.style.display = 'none';
+        
+        // Add bot response
+        addBotMessage(data.answer, data.confidence);
+        
+        // Update sources
+        updateSources(data.sources);
+        
+        // Add feedback buttons
+        addFeedbackButtons(question, data.answer);
+        
+        // Update conversation history
+        await loadConversationHistory();
+        
+    } catch (error) {
+        loadingIndicator.style.display = 'none';
+        addBotMessage("Sorry, I encountered an error. Please try again.", 0);
+        console.error('Error:', error);
+    }
+}
+
+// Add helper functions
+function getUserId() {
+    // In a real app, this would be from authentication
+    // For now, generate a persistent anonymous ID
+    let userId = localStorage.getItem('tuk_user_id');
+    if (!userId) {
+        userId = 'user_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('tuk_user_id', userId);
+    }
+    return userId;
+}
+
+function updateHistoryButton() {
+    // Update or add history button to navbar
+    const navbar = document.querySelector('.navbar-nav');
+    const existingBtn = document.getElementById('historyBtn');
+    
+    if (!existingBtn && currentConversationId) {
+        const historyBtn = document.createElement('li');
+        historyBtn.className = 'nav-item';
+        historyBtn.id = 'historyBtn';
+        historyBtn.innerHTML = `
+            <a class="nav-link" href="#" id="showHistoryBtn">
+                <i class="fas fa-history"></i> Chat History
+            </a>
+        `;
+        navbar.appendChild(historyBtn);
+        
+        // Add event listener
+        document.getElementById('showHistoryBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            await showConversationHistory();
+        });
+    }
+}
+
+async function loadConversationHistory() {
+    try {
+        const response = await fetch(`/api/history?conversation_id=${currentConversationId}`);
+        const data = await response.json();
+        conversationHistory = data.history || [];
+    } catch (error) {
+        console.error('Error loading history:', error);
+    }
+}
+
+async function showConversationHistory() {
+    try {
+        const response = await fetch(`/api/history?conversation_id=${currentConversationId}&limit=50`);
+        const data = await response.json();
+        const history = data.history || [];
+        
+        let historyHTML = `
+            <div class="modal fade" id="historyModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-history me-2"></i>Chat History
+                                <span class="badge bg-primary rounded-pill ms-2">${history.length} messages</span>
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+        `;
+        
+        if (history.length === 0) {
+            historyHTML += `
+                <div class="text-center py-4">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No conversation history yet.</p>
+                </div>
+            `;
+        } else {
+            historyHTML += '<div class="list-group">';
+            
+            history.reverse().forEach((item, index) => {
+                const date = new Date(item.created_at);
+                const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const dateStr = date.toLocaleDateString();
+                
+                historyHTML += `
+                    <div class="list-group-item border-0 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">${dateStr} ${timeStr}</small>
+                            <span class="badge bg-${item.confidence > 70 ? 'success' : item.confidence > 40 ? 'warning' : 'danger'}">
+                                ${item.confidence}% confidence
+                            </span>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <strong class="d-block mb-1">
+                                <i class="fas fa-user text-primary me-2"></i>You asked:
+                            </strong>
+                            <div class="ps-3">${escapeHtml(item.query)}</div>
+                        </div>
+                        
+                        <div>
+                            <strong class="d-block mb-1">
+                                <i class="fas fa-robot text-success me-2"></i>TUK-ConvoSearch answered:
+                            </strong>
+                            <div class="ps-3">${formatAnswer(escapeHtml(item.answer))}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            historyHTML += '</div>';
+        }
+        
+        historyHTML += `
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add modal to DOM
+        document.body.insertAdjacentHTML('beforeend', historyHTML);
+        
+        // Show modal
+        const historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
+        historyModal.show();
+        
+        // Remove modal from DOM after it's hidden
+        document.getElementById('historyModal').addEventListener('hidden.bs.modal', function () {
+            this.remove();
+        });
+        
+    } catch (error) {
+        console.error('Error showing history:', error);
+    }
+}
+
+// Add escapeHtml function for safety
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Initialize on page load
+window.onload = function() {
+    userInput.focus();
+    
+    // Generate or retrieve conversation ID
+    currentConversationId = localStorage.getItem('current_conversation_id');
+    if (!currentConversationId) {
+        currentConversationId = 'conv_' + Date.now();
+        localStorage.setItem('current_conversation_id', currentConversationId);
+    }
+    
+    // Load previous history
+    loadConversationHistory();
+    updateHistoryButton();
+};
+
+// Add "New Chat" button to navbar
+const navbar = document.querySelector('.navbar-nav');
+const newChatBtn = document.createElement('li');
+newChatBtn.className = 'nav-item';
+newChatBtn.innerHTML = `
+    <a class="nav-link" href="#" id="newChatBtn">
+        <i class="fas fa-plus-circle"></i> New Chat
+    </a>
+`;
+navbar.appendChild(newChatBtn);
+
+document.getElementById('newChatBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    if (confirm('Start a new conversation? Your current chat history will be saved.')) {
+        // Clear chat messages
+        document.getElementById('chatMessages').innerHTML = '';
+        
+        // Generate new conversation ID
+        currentConversationId = 'conv_' + Date.now();
+        localStorage.setItem('current_conversation_id', currentConversationId);
+        
+        // Reset sources
+        document.getElementById('sourcesList').innerHTML = '<p class="text-muted mb-0">No sources referenced yet.</p>';
+        document.getElementById('sourceCount').textContent = '0';
+        
+        // Add welcome message
+        addBotMessage("Hello! I'm TUK-ConvoSearch, starting a new conversation. How can I help you?");
+        
+        // Update history button
+        updateHistoryButton();
+    }
+});
         
         // Add initial bot message
         addBotMessage("Hello! I'm TUK-ConvoSearch, your AI assistant for the Technical University of Kenya. How can I help you today?");
