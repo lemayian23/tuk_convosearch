@@ -165,4 +165,5 @@ Financial Aid Office: Room 201, Administration Block"""
     print("✓ Created 3 sample TUK documents")
 
 if __name__ == "__main__":
-    setup_project()
+    setup_project()2222227  1e1/1`  ;./q`>
+
