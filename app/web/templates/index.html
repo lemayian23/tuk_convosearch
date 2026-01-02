@@ -3,618 +3,433 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TUK-ConvoSearch - Student Support Assistant</title>
+    <title>TUK-ConvoSearch - AI Student Support Assistant</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --tuk-blue: #0033A0;
-            --tuk-yellow: #FFD100;
+            --tuk-primary: #0033A0;
+            --tuk-secondary: #FFD100;
+            --tuk-accent: #0072CE;
+            --tuk-light: #F0F5FF;
+            --tuk-dark: #001A4D;
+            --tuk-success: #28A745;
+            --tuk-warning: #FFC107;
+            --tuk-danger: #DC3545;
+            --tuk-gray: #6C757D;
+            --tuk-light-gray: #F8F9FA;
+            --tuk-border: #E9ECEF;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-bottom: 40px;
         }
-        
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--tuk-light-gray);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--tuk-gray);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--tuk-primary);
+        }
+
+        /* Navbar */
         .navbar {
-            background: linear-gradient(135deg, var(--tuk-blue) 0%, #002080 100%);
+            background: linear-gradient(135deg, var(--tuk-primary) 0%, var(--tuk-dark) 100%);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        
-        .chat-container {
-            height: 70vh;
-            overflow-y: auto;
-            border-radius: 10px;
-            background-color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .message {
-            padding: 12px 16px;
-            margin: 8px 0;
-            border-radius: 10px;
-            max-width: 80%;
-        }
-        
-        .user-message {
-            background-color: var(--tuk-blue);
-            color: white;
-            margin-left: auto;
-            border-bottom-right-radius: 4px;
-        }
-        
-        .bot-message {
-            background-color: #e9ecef;
-            color: #212529;
-            border-bottom-left-radius: 4px;
-        }
-        
-        .source-badge {
-            background-color: var(--tuk-yellow);
-            color: #000;
-            font-size: 0.8em;
-            padding: 2px 8px;
-            border-radius: 12px;
-            margin-right: 5px;
-        }
-        
-        .confidence-meter {
-            height: 4px;
-            background-color: #dee2e6;
-            border-radius: 2px;
-            margin-top: 5px;
-        }
-        
-        .confidence-fill {
-            height: 100%;
-            background-color: #28a745;
-            border-radius: 2px;
-            transition: width 0.3s ease;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .spinner {
+
+        .navbar-brand .logo-icon {
+            background: var(--tuk-secondary);
+            color: var(--tuk-primary);
             width: 40px;
             height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--tuk-blue);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            margin: 0 2px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .badge-notification {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translate(50%, -50%);
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+        }
+
+        /* Main Container */
+        .container-main {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 0 20px;
         }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        /* Welcome Card */
+        .welcome-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-lg);
+            border: none;
+            overflow: hidden;
+            position: relative;
         }
-        
-        .input-group {
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--tuk-primary), var(--tuk-accent));
         }
-        
-        .btn-primary {
-            background-color: var(--tuk-blue);
-            border-color: var(--tuk-blue);
+
+        .welcome-title {
+            color: var(--tuk-primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        
-        .btn-primary:hover {
-            background-color: #002080;
-            border-color: #002080;
+
+        .welcome-title i {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--tuk-primary), var(--tuk-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-    </style>
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-robot me-2"></i>
-                <strong>TUK-ConvoSearch</strong>
-                <small class="ms-2 opacity-75">Beta v1.0</small>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="systemInfoBtn">
-                            <i class="fas fa-info-circle"></i> System Info
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="uploadDocsBtn">
-                            <i class="fas fa-upload"></i> Upload Docs
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Main Container -->
-    <div class="container mt-4">
-        <div class="row">
-            <!-- Chat Interface -->
-            <div class="col-lg-8 mx-auto">
-                <!-- Welcome Card -->
-                <div class="card mb-4 border-0 shadow-sm">
-                    <div class="card-body">
-                        <h4 class="card-title text-primary">
-                            <i class="fas fa-graduation-cap me-2"></i>Welcome to TUK-ConvoSearch
-                        </h4>
-                        <p class="card-text">
-                            Ask me anything about TUK! I can help with:
-                        </p>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-check text-success me-2"></i>Academic policies</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Admission procedures</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Examination schedules</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Terms/Semester starts/begins</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-check text-success me-2"></i>Fee structures</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Library services</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Campus facilities</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="alert alert-info mt-3">
-                            <small>
-                                <i class="fas fa-lightbulb me-2"></i>
-                                <strong>Tip:</strong> Be specific in your questions for better answers!
-                            </small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat Container -->
-                <div class="card border-0 shadow">
-                    <div class="card-body p-0">
-                        <!-- Chat Messages -->
-                        <div class="chat-container p-3" id="chatMessages">
-                            <!-- Messages will appear here -->
-                        </div>
-                        
-                        <!-- Loading Indicator -->
-                        <div class="loading" id="loadingIndicator">
-                            <div class="spinner"></div>
-                            <p class="mt-2 text-muted">Searching TUK documents...</p>
-                        </div>
-                        
-                        <!-- Input Area -->
-                        <div class="p-3">
-                            <div class="input-group">
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="userInput" 
-                                       placeholder="Ask about TUK policies, deadlines, procedures..."
-                                       autocomplete="off">
-                                <button class="btn btn-primary" type="button" id="sendButton">
-                                    <i class="fas fa-paper-plane"></i> Send
-                                </button>
-                            </div>
-                            <div class="mt-2 text-center">
-                                <small class="text-muted">
-                                    <i class="fas fa-shield-alt me-1"></i>
-                                    Powered by TUK's official documents • Your data is secure
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Sources Panel (Collapsible) -->
-                <div class="card mt-4 border-0 shadow-sm">
-                    <div class="card-header bg-white">
-                        <h6 class="mb-0">
-                            <a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#sourcesPanel">
-                                <i class="fas fa-file-alt me-2"></i>Document Sources
-                                <span class="badge bg-primary rounded-pill ms-2" id="sourceCount">0</span>
-                            </a>
-                        </h6>
-                    </div>
-                    <div class="collapse" id="sourcesPanel">
-                        <div class="card-body">
-                            <div id="sourcesList">
-                                <p class="text-muted mb-0">No sources referenced yet.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modals -->
-    <div class="modal fade" id="systemInfoModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">System Information</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="systemInfoContent">
-                    Loading...
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // DOM Elements
-        const chatMessages = document.getElementById('chatMessages');
-        const userInput = document.getElementById('userInput');
-        const sendButton = document.getElementById('sendButton');
-        const loadingIndicator = document.getElementById('loadingIndicator');
-        const sourcesList = document.getElementById('sourcesList');
-        const sourceCount = document.getElementById('sourceCount');
-
-        // Add after DOM elements definition
-let currentConversationId = null;
-let conversationHistory = [];
-
-// Update sendMessage function
-async function sendMessage() {
-    const question = userInput.value.trim();
-    if (!question) return;
-    
-    // Add user message
-    addUserMessage(question);
-    userInput.value = '';
-    
-    // Show loading
-    loadingIndicator.style.display = 'block';
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    
-    try {
-        // Send to API with conversation ID
-        const response = await fetch('/api/query', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                question: question,
-                conversation_id: currentConversationId,
-                user_id: getUserId()
-            })
-        });
-        
-        const data = await response.json();
-        
-        // Store conversation ID if this is a new conversation
-        if (!currentConversationId && data.conversation_id) {
-            currentConversationId = data.conversation_id;
-            updateHistoryButton();
+        .feature-badge {
+            background: linear-gradient(135deg, var(--tuk-secondary), #FFE566);
+            color: var(--tuk-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+            box-shadow: var(--shadow-sm);
         }
-        
-        // Hide loading
-        loadingIndicator.style.display = 'none';
-        
-        // Add bot response
-        addBotMessage(data.answer, data.confidence);
-        
-        // Update sources
-        updateSources(data.sources);
-        
-        // Add feedback buttons
-        addFeedbackButtons(question, data.answer);
-        
-        // Update conversation history
-        await loadConversationHistory();
-        
-    } catch (error) {
-        loadingIndicator.style.display = 'none';
-        addBotMessage("Sorry, I encountered an error. Please try again.", 0);
-        console.error('Error:', error);
-    }
-}
 
-// Add helper functions
-function getUserId() {
-    // In a real app, this would be from authentication
-    // For now, generate a persistent anonymous ID
-    let userId = localStorage.getItem('tuk_user_id');
-    if (!userId) {
-        userId = 'user_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('tuk_user_id', userId);
-    }
-    return userId;
-}
-
-function updateHistoryButton() {
-    // Update or add history button to navbar
-    const navbar = document.querySelector('.navbar-nav');
-    const existingBtn = document.getElementById('historyBtn');
-    
-    if (!existingBtn && currentConversationId) {
-        const historyBtn = document.createElement('li');
-        historyBtn.className = 'nav-item';
-        historyBtn.id = 'historyBtn';
-        historyBtn.innerHTML = `
-            <a class="nav-link" href="#" id="showHistoryBtn">
-                <i class="fas fa-history"></i> Chat History
-            </a>
-        `;
-        navbar.appendChild(historyBtn);
-        
-        // Add event listener
-        document.getElementById('showHistoryBtn').addEventListener('click', async function(e) {
-            e.preventDefault();
-            await showConversationHistory();
-        });
-    }
-}
-
-async function loadConversationHistory() {
-    try {
-        const response = await fetch(`/api/history?conversation_id=${currentConversationId}`);
-        const data = await response.json();
-        conversationHistory = data.history || [];
-    } catch (error) {
-        console.error('Error loading history:', error);
-    }
-}
-
-async function showConversationHistory() {
-    try {
-        const response = await fetch(`/api/history?conversation_id=${currentConversationId}&limit=50`);
-        const data = await response.json();
-        const history = data.history || [];
-        
-        let historyHTML = `
-            <div class="modal fade" id="historyModal" tabindex="-1">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="fas fa-history me-2"></i>Chat History
-                                <span class="badge bg-primary rounded-pill ms-2">${history.length} messages</span>
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-        `;
-        
-        if (history.length === 0) {
-            historyHTML += `
-                <div class="text-center py-4">
-                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">No conversation history yet.</p>
-                </div>
-            `;
-        } else {
-            historyHTML += '<div class="list-group">';
-            
-            history.reverse().forEach((item, index) => {
-                const date = new Date(item.created_at);
-                const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const dateStr = date.toLocaleDateString();
-                
-                historyHTML += `
-                    <div class="list-group-item border-0 mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <small class="text-muted">${dateStr} ${timeStr}</small>
-                            <span class="badge bg-${item.confidence > 70 ? 'success' : item.confidence > 40 ? 'warning' : 'danger'}">
-                                ${item.confidence}% confidence
-                            </span>
-                        </div>
-                        
-                        <div class="mb-2">
-                            <strong class="d-block mb-1">
-                                <i class="fas fa-user text-primary me-2"></i>You asked:
-                            </strong>
-                            <div class="ps-3">${escapeHtml(item.query)}</div>
-                        </div>
-                        
-                        <div>
-                            <strong class="d-block mb-1">
-                                <i class="fas fa-robot text-success me-2"></i>TUK-ConvoSearch answered:
-                            </strong>
-                            <div class="ps-3">${formatAnswer(escapeHtml(item.answer))}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            historyHTML += '</div>';
+        /* Chat Container */
+        .chat-wrapper {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            border: 1px solid var(--tuk-border);
         }
-        
-        historyHTML += `
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Add modal to DOM
-        document.body.insertAdjacentHTML('beforeend', historyHTML);
-        
-        // Show modal
-        const historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
-        historyModal.show();
-        
-        // Remove modal from DOM after it's hidden
-        document.getElementById('historyModal').addEventListener('hidden.bs.modal', function () {
-            this.remove();
-        });
-        
-    } catch (error) {
-        console.error('Error showing history:', error);
-    }
-}
 
-// Add escapeHtml function for safety
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// Initialize on page load
-window.onload = function() {
-    userInput.focus();
-    
-    // Generate or retrieve conversation ID
-    currentConversationId = localStorage.getItem('current_conversation_id');
-    if (!currentConversationId) {
-        currentConversationId = 'conv_' + Date.now();
-        localStorage.setItem('current_conversation_id', currentConversationId);
-    }
-    
-    // Load previous history
-    loadConversationHistory();
-    updateHistoryButton();
-};
-
-// Add "New Chat" button to navbar
-const navbar = document.querySelector('.navbar-nav');
-const newChatBtn = document.createElement('li');
-newChatBtn.className = 'nav-item';
-newChatBtn.innerHTML = `
-    <a class="nav-link" href="#" id="newChatBtn">
-        <i class="fas fa-plus-circle"></i> New Chat
-    </a>
-`;
-navbar.appendChild(newChatBtn);
-
-document.getElementById('newChatBtn').addEventListener('click', function(e) {
-    e.preventDefault();
-    
-    if (confirm('Start a new conversation? Your current chat history will be saved.')) {
-        // Clear chat messages
-        document.getElementById('chatMessages').innerHTML = '';
-        
-        // Generate new conversation ID
-        currentConversationId = 'conv_' + Date.now();
-        localStorage.setItem('current_conversation_id', currentConversationId);
-        
-        // Reset sources
-        document.getElementById('sourcesList').innerHTML = '<p class="text-muted mb-0">No sources referenced yet.</p>';
-        document.getElementById('sourceCount').textContent = '0';
-        
-        // Add welcome message
-        addBotMessage("Hello! I'm TUK-ConvoSearch, starting a new conversation. How can I help you?");
-        
-        // Update history button
-        updateHistoryButton();
-    }
-});
-        
-        // Add initial bot message
-        addBotMessage("Hello! I'm TUK-ConvoSearch, your AI assistant for the Technical University of Kenya. How can I help you today?");
-        
-        // Event Listeners
-        sendButton.addEventListener('click', sendMessage);
-        userInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendMessage();
-        });
-        
-        // System Info Button
-        document.getElementById('systemInfoBtn').addEventListener('click', async function(e) {
-            e.preventDefault();
-            const response = await fetch('/api/system-info');
-            const data = await response.json();
-            
-            const modalContent = `
-                <h6>System Status</h6>
-                <ul class="list-group mb-3">
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>System Name:</span>
-                        <span><strong>${data.system_name}</strong></span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Version:</span>
-                        <span>${data.version}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Documents Indexed:</span>
-                        <span>${data.vector_store.document_count || 0}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>LLM Model:</span>
-                        <span>${data.llm_model} (${data.llm_provider})</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Embedding Model:</span>
-                        <span>${data.embedding_model}</span>
-                    </li>
-                </ul>
-                <div class="alert alert-info">
-                    <small>
-                        <i class="fas fa-info-circle me-2"></i>
-                        This system uses Retrieval-Augmented Generation (RAG) to provide accurate answers based on TUK's official documents.
-                    </small>
-                </div>
-            `;
-            
-            document.getElementById('systemInfoContent').innerHTML = modalContent;
-            new bootstrap.Modal(document.getElementById('systemInfoModal')).show();
-        });
-        
-        // Upload Documents Button
-        document.getElementById('uploadDocsBtn').addEventListener('click', async function(e) {
-            e.preventDefault();
-            try {
-                const response = await fetch('/api/upload', { method: 'POST' });
-                const data = await response.json();
-                alert(data.message);
-            } catch (error) {
-                alert('Error uploading documents: ' + error);
-            }
-        });
-        
-        // Functions
-        async function sendMessage() {
-            const question = userInput.value.trim();
-            if (!question) return;
-            
-            // Add user message
-            addUserMessage(question);
-            userInput.value = '';
-            
-            // Show loading
-            loadingIndicator.style.display = 'block';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            try {
-                // Send to API
-                const response = await fetch('/api/query', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question: question })
-                });
-                
-                const data = await response.json();
-                
-                // Hide loading
-                loadingIndicator.style.display = 'none';
-                
-                // Add bot response
-                addBotMessage(data.answer, data.confidence);
-                
-                // Update sources
-                updateSources(data.sources);
-                
-                // Add feedback buttons
-                addFeedbackButtons(question, data.answer);
-                
-            } catch (error) {
-                loadingIndicator.style.display = 'none';
-                addBotMessage("Sorry, I encountered an error. Please try again.", 0);
-                console.error('Error:', error);
-            }
+        .chat-header {
+            background: linear-gradient(135deg, var(--tuk-primary), var(--tuk-accent));
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
+
+        .chat-header h3 {
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .chat-messages {
+            height: 60vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: var(--tuk-light);
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-avatar {
+            background: linear-gradient(135deg, var(--tuk-primary), var(--tuk-accent));
+            color: white;
+        }
+
+        .bot-avatar {
+            background: linear-gradient(135deg, var(--tuk-secondary), #FFE566);
+            color: var(--tuk-dark);
+        }
+
+        .message-content {
+            flex: 1;
+            max-width: 85%;
+        }
+
+        .message-bubble {
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-md);
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-message .message-bubble {
+            background: linear-gradient(135deg, var(--tuk-primary), var(--tuk-accent));
+            color: white;
+            border-top-right-radius: 4px;
+        }
+
+        .bot-message .message-bubble {
+            background: white;
+            color: #333;
+            border-top-left-radius: 4px;
+            border: 1px solid var(--tuk-border);
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            color: var(--tuk-gray);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sources-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 1rem;
+        }
+
+        .source-tag {
+            background: rgba(0, 51, 160, 0.1);
+            color: var(--tuk-primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+        }
+
+        .source-tag:hover {
+            background: rgba(0, 51, 160, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 1.5rem;
+            background: white;
+            border-top: 1px solid var(--tuk-border);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper textarea {
+            width: 100%;
+            padding: 1rem 4.5rem 1rem 1rem;
+            border: 2px solid var(--tuk-border);
+            border-radius: var(--radius-md);
+            resize: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+            min-height: 60px;
+            max-height: 120px;
+        }
+
+        .input-wrapper textarea:focus {
+            outline: none;
+            border-color: var(--tuk-primary);
+            box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
+        }
+
+        .input-actions {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, var(--tuk-primary), var(--tuk-accent));
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .input-hints {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 1rem;
+        }
+
+        .hint-chip {
+            background: var(--tuk-light);
+            border: 1px solid var(--tuk-border);
+            color: var(--tuk-gray);
+            padding: 0.4rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .hint-chip:hover {
+            background: var(--tuk-primary);
+            color: white;
+            border-color: var(--tuk-primary);
+            transform: translateY(-1px);
+        }
+
+        /* Sources Panel */
+        .sources-panel {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .sources-header {
+            padding: 1.25rem 1.5rem;
+            background: var(--tuk-light);
+            border-bottom: 1px solid var(--tuk-border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+
+        .sources-header:hover {
+            background: var(--tuk-border);
+        }
+
