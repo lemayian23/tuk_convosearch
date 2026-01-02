@@ -1101,7 +1101,7 @@
             
             sourcesList.innerHTML = sourcesHTML;
             
-            // Auto-expand sources panel
+            // Feat to uto-expand sources panel
             const sourcesCollapse = new bootstrap.Collapse(document.getElementById('sourcesContent'), {
                 toggle: false
             });
@@ -1136,11 +1136,11 @@
                     chatMessages.appendChild(welcomeMessage);
                 }
                 
-                // Generate new conversation ID
+                // Generating new conversation ID
                 currentConversationId = 'conv_' + Date.now();
                 localStorage.setItem('current_conversation_id', currentConversationId);
                 
-                // Reset sources
+                // Resetting sources
                 sourceCount.textContent = '0';
                 sourcesList.innerHTML = `
                     <div class="text-center py-4">
