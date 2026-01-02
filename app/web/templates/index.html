@@ -952,7 +952,7 @@
             userInput.style.height = 'auto';
             sendButton.disabled = true;
             
-            // Show loading
+            // feat to show loading
             loadingIndicator.style.display = 'flex';
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
@@ -969,13 +969,13 @@
                 
                 const data = await response.json();
                 
-                // Update conversation ID
+                // Updating the conversation ID
                 if (!currentConversationId && data.conversation_id) {
                     currentConversationId = data.conversation_id;
                     localStorage.setItem('current_conversation_id', currentConversationId);
                 }
                 
-                // Hide loading
+                // Hiding loading
                 loadingIndicator.style.display = 'none';
                 
                 // Add bot response
